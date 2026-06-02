@@ -4,8 +4,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Svg, { Circle } from 'react-native-svg';
 
 export default function DiariasScreen() {
-  const [diarias, setDiarias] = useState<{id: number, texto: string, hecha: boolean}[]>([]);
+  const [diarias, setDiarias] = useState<{id: number, texto: string, hecha: boolean, seccion: 'mañana' | 'tarde' | 'noche'}[]>([]);
   const [nuevaDiaria, setNuevaDiaria] = useState('');
+const [seccionActiva, setSeccionActiva] = useState<'mañana' | 'tarde' | 'noche'>('mañana');
   const [cargado, setCargado] = useState(false);
 
   const cargarDiarias = async () => {
@@ -28,9 +29,15 @@ export default function DiariasScreen() {
 
   if (!cargado) cargarDiarias();
 
+  const limpiarDiarias = async () => {
+    await AsyncStorage.removeItem('diarias');
+    await AsyncStorage.removeItem('fecha_diarias');
+    setDiarias([]);
+  };
+
   const agregarDiaria = () => {
     if (nuevaDiaria.trim() === '') return;
-    const nuevas = [...diarias, { id: Date.now(), texto: nuevaDiaria, hecha: false }];
+    const nuevas = [...diarias, { id: Date.now(), texto: nuevaDiaria, hecha: false, seccion: seccionActiva }];
     setDiarias(nuevas);
     guardarDiarias(nuevas);
     setNuevaDiaria('');
@@ -54,6 +61,34 @@ export default function DiariasScreen() {
   const radio = 54;
   const circunferencia = 2 * Math.PI * radio;
   const progreso = total === 0 ? 0 : (hechas / total) * circunferencia;
+
+  const renderSeccion = (nombre: 'mañana' | 'tarde' | 'noche', emoji: string) => {
+    const tareasFiltradas = diarias.filter(t => t.seccion === nombre);
+    return (
+      <View style={styles.seccion}>
+        <Text style={styles.secTitulo}>{emoji} {nombre.charAt(0).toUpperCase() + nombre.slice(1)}</Text>
+        {tareasFiltradas.length === 0 ? (
+          <View style={styles.tarjeta}>
+            <Text style={styles.tarjetaTexto}>No hay tareas para la {nombre}</Text>
+          </View>
+        ) : (
+          tareasFiltradas.map(t => (
+            <View key={t.id} style={styles.tareaItem}>
+              <TouchableOpacity onPress={() => toggleDiaria(t.id)} style={styles.tareaRow}>
+                <View style={[styles.circulo, t.hecha && styles.circuloHecho]}>
+                  {t.hecha && <Text style={styles.check}>✓</Text>}
+                </View>
+                <Text style={[styles.tareaTexto, t.hecha && styles.tareaHecha]}>{t.texto}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => eliminarDiaria(t.id)}>
+                <Text style={styles.eliminar}>✕</Text>
+              </TouchableOpacity>
+            </View>
+          ))
+        )}
+      </View>
+    );
+  };
 
   return (
     <ScrollView style={styles.container}>
@@ -81,10 +116,22 @@ export default function DiariasScreen() {
       </View>
 
       <View style={styles.seccion}>
+        <View style={styles.selectorRow}>
+          {(['mañana', 'tarde', 'noche'] as const).map(s => (
+            <TouchableOpacity
+              key={s}
+              style={[styles.selectorBtn, seccionActiva === s && styles.selectorActivo]}
+              onPress={() => setSeccionActiva(s)}>
+              <Text style={[styles.selectorTexto, seccionActiva === s && styles.selectorTextoActivo]}>
+                {s.charAt(0).toUpperCase() + s.slice(1)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
         <View style={styles.inputRow}>
           <TextInput
             style={styles.input}
-            placeholder="Nueva tarea diaria..."
+            placeholder={`Nueva tarea para la ${seccionActiva}...`}
             value={nuevaDiaria}
             onChangeText={setNuevaDiaria}
             onSubmitEditing={agregarDiaria}
@@ -93,31 +140,14 @@ export default function DiariasScreen() {
             <Text style={styles.btnTexto}>+</Text>
           </TouchableOpacity>
         </View>
-
-        {diarias.length === 0 ? (
-          <View style={styles.tarjeta}>
-            <Text style={styles.tarjetaTexto}>No hay tareas diarias aún</Text>
-          </View>
-        ) : (
-          diarias.map(t => (
-            <View key={t.id} style={styles.tareaItem}>
-              <TouchableOpacity onPress={() => toggleDiaria(t.id)} style={styles.tareaRow}>
-                <View style={[styles.circulo, t.hecha && styles.circuloHecho]}>
-                  {t.hecha && <Text style={styles.check}>✓</Text>}
-                </View>
-                <Text style={[styles.tareaTexto, t.hecha && styles.tareaHecha]}>{t.texto}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => eliminarDiaria(t.id)}>
-                <Text style={styles.eliminar}>✕</Text>
-              </TouchableOpacity>
-            </View>
-          ))
-        )}
       </View>
+
+      {renderSeccion('mañana', '🌅')}
+      {renderSeccion('tarde', '☀️')}
+      {renderSeccion('noche', '🌙')}
     </ScrollView>
   );
 }
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F7F6F2' },
   header: { padding: 24, paddingTop: 60, backgroundColor: '#1A1917' },
@@ -141,4 +171,9 @@ const styles = StyleSheet.create({
   tareaTexto: { fontSize: 14, color: '#1A1917', flex: 1 },
   tareaHecha: { textDecorationLine: 'line-through', color: '#A8A59E' },
   eliminar: { fontSize: 16, color: '#A8A59E', paddingLeft: 8 },
+  selectorRow: { flexDirection: 'row', gap: 8, marginBottom: 10 },
+  selectorBtn: { flex: 1, padding: 10, borderRadius: 10, borderWidth: 1, borderColor: '#E5E2DA', backgroundColor: '#FFFFFF', alignItems: 'center' },
+  selectorActivo: { backgroundColor: '#1A1917', borderColor: '#1A1917' },
+  selectorTexto: { fontSize: 13, fontWeight: '500', color: '#6B6860' },
+  selectorTextoActivo: { color: '#FFFFFF' }
 });
