@@ -1,11 +1,14 @@
  import { StyleSheet, Text, View, ScrollView, TextInput, TouchableOpacity } from 'react-native';
 import { useState } from 'react';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function TareasScreen() {
-  const [tareas, setTareas] = useState<{id: number, texto: string, hecha: boolean}[]>([]);
+const [tareas, setTareas] = useState<{id: number, texto: string, hecha: boolean, fecha?: Date}[]>([]);
   const [nuevaTarea, setNuevaTarea] = useState('');
   const [cargado, setCargado] = useState(false);
+  const [fechaSeleccionada, setFechaSeleccionada] = useState<Date | undefined>(undefined);
+  const [mostrarFecha, setMostrarFecha] = useState(false);
 
   const cargarTareas = async () => {
     const guardadas = await AsyncStorage.getItem('tareas');
@@ -29,10 +32,11 @@ export default function TareasScreen() {
 
   const agregarTarea = () => {
     if (nuevaTarea.trim() === '') return;
-    const nuevas = [...tareas, { id: Date.now(), texto: nuevaTarea, hecha: false }];
+    const nuevas = [...tareas, { id: Date.now(), texto: nuevaTarea, hecha: false, fecha: fechaSeleccionada }];
     setTareas(nuevas);
     guardarTareas(nuevas);
     setNuevaTarea('');
+    setFechaSeleccionada(undefined);
   };
 
   const toggleTarea = (id: number) => {
@@ -45,6 +49,12 @@ export default function TareasScreen() {
     guardarTareas(ordenadas);
   };
 
+  const eliminarTarea = (id: number) => {
+    const nuevas = tareas.filter(t => t.id !== id);
+    setTareas(nuevas);
+    guardarTareas(nuevas);
+  };
+  
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
@@ -59,22 +69,49 @@ export default function TareasScreen() {
             onChangeText={setNuevaTarea}
             onSubmitEditing={agregarTarea}
           />
+          <TouchableOpacity style={styles.btnFecha} onPress={() => setMostrarFecha(true)}>
+            <Text style={styles.btnFechaTexto}>📅</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.btnAgregar} onPress={agregarTarea}>
             <Text style={styles.btnTexto}>+</Text>
           </TouchableOpacity>
         </View>
+        {fechaSeleccionada && (
+          <Text style={styles.fechaPreview}>
+            📅 {fechaSeleccionada.toLocaleDateString('es-CL')}
+          </Text>
+        )}
+        {mostrarFecha && (
+          <DateTimePicker
+            value={fechaSeleccionada || new Date()}
+            mode="date"
+            display="default"
+            onChange={(event, date) => {
+              setMostrarFecha(false);
+              if (date) setFechaSeleccionada(date);
+            }}
+          />
+        )}
         {tareas.length === 0 ? (
           <View style={styles.tarjeta}>
             <Text style={styles.tarjetaTexto}>No hay tareas por hoy</Text>
           </View>
         ) : (
           tareas.map(t => (
-            <TouchableOpacity key={t.id} style={styles.tareaItem} onPress={() => toggleTarea(t.id)}>
-              <View style={[styles.circulo, t.hecha && styles.circuloHecho]}>
-                {t.hecha && <Text style={styles.check}>✓</Text>}
-              </View>
-              <Text style={[styles.tareaTexto, t.hecha && styles.tareaHecha]}>{t.texto}</Text>
-            </TouchableOpacity>
+            <View key={t.id} style={styles.tareaItem}>
+              <TouchableOpacity onPress={() => toggleTarea(t.id)} style={styles.tareaRow}>
+                <View style={[styles.circulo, t.hecha && styles.circuloHecho]}>
+                  {t.hecha && <Text style={styles.check}>✓</Text>}
+                </View>
+                <View style={{flex:1}}>
+                  <Text style={[styles.tareaTexto, t.hecha && styles.tareaHecha]}>{t.texto}</Text>
+                  {t.fecha && <Text style={styles.fechaTarea}>📅 {new Date(t.fecha).toLocaleDateString('es-CL')}</Text>}
+                </View>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => eliminarTarea(t.id)}>
+                <Text style={styles.eliminar}>✕</Text>
+              </TouchableOpacity>
+            </View>
           ))
         )}
       </View>
@@ -99,4 +136,8 @@ const styles = StyleSheet.create({
   check: { color: '#FFFFFF', fontSize: 12, fontWeight: 'bold' },
   tareaTexto: { fontSize: 14, color: '#1A1917', flex: 1 },
   tareaHecha: { textDecorationLine: 'line-through', color: '#A8A59E' },
+  btnFecha: { backgroundColor: '#FFFFFF', borderRadius: 10, width: 46, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#E5E2DA' },
+  btnFechaTexto: { fontSize: 20 },
+  fechaPreview: { fontSize: 12, color: '#6B6860', marginBottom: 8, paddingLeft: 4 },
+  fechaTarea: { fontSize: 11, color: '#A8A59E', marginTop: 2 },
 });
