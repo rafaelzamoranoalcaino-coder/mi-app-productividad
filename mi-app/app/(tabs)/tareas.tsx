@@ -140,4 +140,6 @@ const styles = StyleSheet.create({
   btnFechaTexto: { fontSize: 20 },
   fechaPreview: { fontSize: 12, color: '#6B6860', marginBottom: 8, paddingLeft: 4 },
   fechaTarea: { fontSize: 11, color: '#A8A59E', marginTop: 2 },
+  tareaRow: { flexDirection: 'row', alignItems: 'center', flex: 1, gap: 12 },
+  eliminar: { fontSize: 16, color: '#A8A59E', paddingLeft: 8 },
 });
