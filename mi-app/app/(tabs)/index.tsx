@@ -5,12 +5,15 @@ import { useState, useEffect } from 'react';
 
 export default function CalendarioScreen() {
   const [tareas, setTareas] = useState<{id: number, texto: string, hecha: boolean, fecha?: string}[]>([]);
+  const [recordatorios, setRecordatorios] = useState<{id: number, texto: string, fecha: string, hora: string}[]>([]);
   const [diaSeleccionado, setDiaSeleccionado] = useState('');
 
   useEffect(() => {
     const cargar = async () => {
       const guardadas = await AsyncStorage.getItem('tareas');
       if (guardadas) setTareas(JSON.parse(guardadas));
+    const guardadosRec = await AsyncStorage.getItem('recordatorios');
+      if (guardadosRec) setRecordatorios(JSON.parse(guardadosRec));
     };
     cargar();
   }, []);
@@ -28,6 +31,15 @@ export default function CalendarioScreen() {
       } catch(e) {}
     }
   });
+  recordatorios.forEach(r => {
+    if (r.fecha) {
+      markedDates[r.fecha] = {
+        ...markedDates[r.fecha],
+        marked: true,
+        dotColor: '#378ADD',
+      };
+    }
+  });
 
   if (diaSeleccionado) {
     markedDates[diaSeleccionado] = {
@@ -43,7 +55,7 @@ export default function CalendarioScreen() {
     const fecha = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     return fecha === diaSeleccionado;
   });
-
+  const recordatoriosDia = recordatorios.filter(r => r.fecha === diaSeleccionado);
 
   return (
     <View style={styles.container}>
@@ -80,6 +92,21 @@ export default function CalendarioScreen() {
               </View>
             ))
           )}
+        </View>
+      ) : null}
+
+      {diaSeleccionado && recordatoriosDia.length > 0 ? (
+        <View style={styles.seccion}>
+          <Text style={styles.secTitulo}>🔔 Recordatorios</Text>
+          {recordatoriosDia.map(r => (
+            <View key={r.id} style={styles.tareaItem}>
+              <Text style={{fontSize:20}}>🔔</Text>
+              <View style={{flex:1}}>
+                <Text style={styles.tareaTexto}>{r.texto}</Text>
+                <Text style={{fontSize:11, color:'#A8A59E'}}>🕐 {r.hora}</Text>
+              </View>
+            </View>
+          ))}
         </View>
       ) : null}
     </View>
