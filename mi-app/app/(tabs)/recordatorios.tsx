@@ -6,7 +6,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Notifications from 'expo-notifications';
 
 export default function RecordatoriosScreen() {
-  const [recordatorios, setRecordatorios] = useState<{id: number, texto: string, fecha: string, hora: string}[]>([]);
+  const [Recordatorios, setRecordatorios] = useState<{id: number, texto: string, fecha: string, hora: string}[]>([]);
   const [nuevo, setNuevo] = useState('');
   const [fecha, setFecha] = useState(new Date());
   const [hora, setHora] = useState(new Date());
@@ -21,7 +21,7 @@ export default function RecordatoriosScreen() {
     cargar();
   }, []);
 
-  const guardar = async (nuevos: typeof recordatorios) => {
+  const guardar = async (nuevos: typeof Recordatorios) => {
     await AsyncStorage.setItem('recordatorios', JSON.stringify(nuevos));
   };
 
@@ -41,7 +41,7 @@ export default function RecordatoriosScreen() {
     if (nuevo.trim() === '') return;
     const fechaStr = `${fecha.getFullYear()}-${String(fecha.getMonth()+1).padStart(2,'0')}-${String(fecha.getDate()).padStart(2,'0')}`;
     const horaStr = `${String(hora.getHours()).padStart(2,'0')}:${String(hora.getMinutes()).padStart(2,'0')}`;
-    const nuevos = [...recordatorios, { id: Date.now(), texto: nuevo, fecha: fechaStr, hora: horaStr }];
+    const nuevos = [...Recordatorios, { id: Date.now(), texto: nuevo, fecha: fechaStr, hora: horaStr }];
     setRecordatorios(nuevos);
     guardar(nuevos);
     programarNotificacion(nuevo, fecha, hora);
@@ -49,7 +49,7 @@ export default function RecordatoriosScreen() {
   };
 
   const eliminar = (id: number) => {
-    const nuevos = recordatorios.filter(r => r.id !== id);
+    const nuevos = Recordatorios.filter(r => r.id !== id);
     setRecordatorios(nuevos);
     guardar(nuevos);
   };
@@ -98,12 +98,12 @@ export default function RecordatoriosScreen() {
       </View>
 
       <View style={styles.seccion}>
-        {recordatorios.length === 0 ? (
+        {Recordatorios.length === 0 ? (
           <View style={styles.tarjeta}>
             <Text style={styles.tarjetaTexto}>Sin recordatorios aún</Text>
           </View>
         ) : (
-          recordatorios.map(r => (
+          Recordatorios.map(r => (
             <View key={r.id} style={styles.item}>
               <View style={{flex:1}}>
                 <Text style={styles.itemTexto}>{r.texto}</Text>

@@ -6,7 +6,7 @@ import Svg, { Circle } from 'react-native-svg';
 export default function DiariasScreen() {
   const [diarias, setDiarias] = useState<{id: number, texto: string, hecha: boolean, seccion: 'mañana' | 'tarde' | 'noche'}[]>([]);
   const [nuevaDiaria, setNuevaDiaria] = useState('');
-const [seccionActiva, setSeccionActiva] = useState<'mañana' | 'tarde' | 'noche'>('mañana');
+  const [seccionActiva, setSeccionActiva] = useState<'mañana' | 'tarde' | 'noche'>('mañana');
   const [cargado, setCargado] = useState(false);
 
   const cargarDiarias = async () => {
@@ -101,7 +101,7 @@ const [seccionActiva, setSeccionActiva] = useState<'mañana' | 'tarde' | 'noche'
           <Circle cx="70" cy="70" r={radio} stroke="#E5E2DA" strokeWidth="10" fill="none" />
           <Circle
             cx="70" cy="70" r={radio}
-            stroke="#3B6D11"
+            stroke="#1bcabc"
             strokeWidth="10"
             fill="none"
             strokeDasharray={`${progreso} ${circunferencia}`}
@@ -154,8 +154,8 @@ const styles = StyleSheet.create({
   titulo: { fontSize: 26, fontWeight: 'bold', color: '#FFFFFF' },
   anilloWrap: { alignItems: 'center', justifyContent: 'center', marginTop: 24, marginBottom: 8 },
   anilloCentro: { position: 'absolute', alignItems: 'center' },
-  anilloNumero: { fontSize: 22, fontWeight: 'bold', color: '#1A1917' },
-  anilloPct: { fontSize: 13, color: '#6B6860' },
+  anilloNumero: { fontSize: 22, fontWeight: 'bold', color: '#9d14dd' },
+  anilloPct: { fontSize: 13, color: '#8421bd' },
   seccion: { padding: 16 },
   tarjeta: { backgroundColor: '#FFFFFF', borderRadius: 10, padding: 16, borderWidth: 1, borderColor: '#E5E2DA' },
   tarjetaTexto: { fontSize: 14, color: '#A8A59E' },

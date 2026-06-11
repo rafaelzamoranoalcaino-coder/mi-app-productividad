@@ -23,15 +23,7 @@ const [tareas, setTareas] = useState<{id: number, texto: string, hecha: boolean,
 
   const cargarTareas = async () => {
     const guardadas = await AsyncStorage.getItem('tareas');
-    const fechaGuardada = await AsyncStorage.getItem('fecha');
-    const hoy = new Date().toDateString();
-    if (fechaGuardada !== hoy) {
-      await AsyncStorage.setItem('tareas', JSON.stringify([]));
-      await AsyncStorage.setItem('fecha', hoy);
-      setTareas([]);
-    } else if (guardadas) {
-      setTareas(JSON.parse(guardadas));
-    }
+    if (guardadas) setTareas(JSON.parse(guardadas));
     setCargado(true);
   };
 
