@@ -88,11 +88,12 @@ const [tareas, setTareas] = useState<{id: number, texto: string, hecha: boolean,
   };
   
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.titulo}>📋 Tareas</Text>
+        <Text style={styles.headerTitulo}>📋 Tareas</Text>
       </View>
-      <View style={styles.seccion}>
+
+      <View style={styles.inputWrap}>
         <View style={styles.inputRow}>
           <TextInput
             style={styles.input}
@@ -109,9 +110,7 @@ const [tareas, setTareas] = useState<{id: number, texto: string, hecha: boolean,
           </TouchableOpacity>
         </View>
         {fechaSeleccionada && (
-          <Text style={styles.fechaPreview}>
-            📅 {fechaSeleccionada.toLocaleDateString('es-CL')}
-          </Text>
+          <Text style={styles.fechaPreview}>📅 {fechaSeleccionada.toLocaleDateString('es-CL')}</Text>
         )}
         {mostrarFecha && (
           <DateTimePicker
@@ -124,54 +123,63 @@ const [tareas, setTareas] = useState<{id: number, texto: string, hecha: boolean,
             }}
           />
         )}
+      </View>
+
+      <ScrollView style={styles.lista} contentContainerStyle={{paddingBottom: 20}}>
         {tareas.length === 0 ? (
-          <View style={styles.tarjeta}>
-            <Text style={styles.tarjetaTexto}>No hay tareas por hoy</Text>
+          <View style={styles.seccion}>
+            <View style={styles.tarjeta}>
+              <Text style={styles.tarjetaTexto}>No hay tareas aún</Text>
+            </View>
           </View>
         ) : (
-          tareas.map(t => (
-            <View key={t.id} style={styles.tareaItem}>
-              <TouchableOpacity onPress={() => toggleTarea(t.id)} style={styles.tareaRow}>
-                <View style={[styles.circulo, t.hecha && styles.circuloHecho]}>
-                  {t.hecha && <Text style={styles.check}>✓</Text>}
-                </View>
-                <View style={{flex:1}}>
-                  <Text style={[styles.tareaTexto, t.hecha && styles.tareaHecha]}>{t.texto}</Text>
-                  {t.fecha && <Text style={styles.fechaTarea}>📅 {new Date(t.fecha).toLocaleDateString('es-CL')}</Text>}
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => eliminarTarea(t.id)}>
-                <Text style={styles.eliminar}>✕</Text>
-              </TouchableOpacity>
-            </View>
-          ))
+          <View style={styles.seccion}>
+            {tareas.map(t => (
+              <View key={t.id} style={styles.tareaItem}>
+                <TouchableOpacity onPress={() => toggleTarea(t.id)} style={styles.tareaRow}>
+                  <View style={[styles.circulo, t.hecha && styles.circuloHecho]}>
+                    {t.hecha && <Text style={styles.check}>✓</Text>}
+                  </View>
+                  <View style={{flex:1}}>
+                    <Text style={[styles.tareaTexto, t.hecha && styles.tareaHecha]}>{t.texto}</Text>
+                    {t.fecha && <Text style={styles.fechaTarea}>📅 {new Date(t.fecha).toLocaleDateString('es-CL')}</Text>}
+                  </View>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => eliminarTarea(t.id)}>
+                  <Text style={styles.eliminar}>✕</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
         )}
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F7F6F2' },
+  container: { flex: 1, backgroundColor: '#F5F3EE' },
   header: { padding: 24, paddingTop: 60, backgroundColor: '#1A1917' },
-  titulo: { fontSize: 26, fontWeight: 'bold', color: '#FFFFFF' },
-  seccion: { padding: 16 },
-  tarjeta: { backgroundColor: '#FFFFFF', borderRadius: 10, padding: 16, borderWidth: 1, borderColor: '#E5E2DA' },
-  tarjetaTexto: { fontSize: 14, color: '#A8A59E' },
-  inputRow: { flexDirection: 'row', gap: 8, marginBottom: 10 },
-  input: { flex: 1, backgroundColor: '#FFFFFF', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: '#E5E2DA', fontSize: 14 },
+  headerTitulo: { fontSize: 28, fontWeight: 'bold', color: '#FFFFFF' },
+  inputWrap: { margin: 16, backgroundColor: '#FFFFFF', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#E5E2DA' },
+  inputRow: { flexDirection: 'row', gap: 8 },
+  input: { flex: 1, backgroundColor: '#F5F3EE', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: '#E5E2DA', fontSize: 14 },
   btnAgregar: { backgroundColor: '#1A1917', borderRadius: 10, width: 46, alignItems: 'center', justifyContent: 'center' },
   btnTexto: { color: '#FFFFFF', fontSize: 24, fontWeight: 'bold' },
-  tareaItem: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 10, padding: 14, marginBottom: 6, borderWidth: 1, borderColor: '#E5E2DA', gap: 12 },
-  circulo: { width: 22, height: 22, borderRadius: 11, borderWidth: 1.5, borderColor: '#CCC9C0', alignItems: 'center', justifyContent: 'center' },
+  btnFecha: { backgroundColor: '#F5F3EE', borderRadius: 10, width: 46, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#E5E2DA' },
+  btnFechaTexto: { fontSize: 20 },
+  fechaPreview: { fontSize: 12, color: '#6B6860', marginTop: 8, paddingLeft: 4 },
+  lista: { flex: 1 },
+  seccion: { paddingHorizontal: 16, paddingTop: 4 },
+  tarjeta: { backgroundColor: '#FFFFFF', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: '#E5E2DA' },
+  tarjetaTexto: { fontSize: 14, color: '#A8A59E' },
+  tareaItem: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 12, padding: 14, marginBottom: 6, borderWidth: 1, borderColor: '#E5E2DA' },
+  tareaRow: { flexDirection: 'row', alignItems: 'center', flex: 1, gap: 12 },
+  circulo: { width: 20, height: 20, borderRadius: 10, borderWidth: 1.5, borderColor: '#CCC9C0', alignItems: 'center', justifyContent: 'center' },
   circuloHecho: { backgroundColor: '#3B6D11', borderColor: '#3B6D11' },
-  check: { color: '#FFFFFF', fontSize: 12, fontWeight: 'bold' },
+  check: { color: '#FFFFFF', fontSize: 11, fontWeight: 'bold' },
   tareaTexto: { fontSize: 14, color: '#1A1917', flex: 1 },
   tareaHecha: { textDecorationLine: 'line-through', color: '#A8A59E' },
-  btnFecha: { backgroundColor: '#FFFFFF', borderRadius: 10, width: 46, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#E5E2DA' },
-  btnFechaTexto: { fontSize: 20 },
-  fechaPreview: { fontSize: 12, color: '#6B6860', marginBottom: 8, paddingLeft: 4 },
   fechaTarea: { fontSize: 11, color: '#A8A59E', marginTop: 2 },
-  tareaRow: { flexDirection: 'row', alignItems: 'center', flex: 1, gap: 12 },
-  eliminar: { fontSize: 16, color: '#A8A59E', paddingLeft: 8 },
+  eliminar: { fontSize: 16, color: '#CCC9C0', paddingLeft: 8 },
 });

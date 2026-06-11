@@ -55,19 +55,18 @@ export default function RecordatoriosScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.titulo}>🔔 Recordatorios</Text>
+        <Text style={styles.headerTitulo}>🔔 Recordatorios</Text>
       </View>
 
-      <View style={styles.seccion}>
+      <View style={styles.inputWrap}>
         <TextInput
           style={styles.input}
           placeholder="Nombre del recordatorio..."
           value={nuevo}
           onChangeText={setNuevo}
         />
-
         <View style={styles.fechaRow}>
           <TouchableOpacity style={styles.fechaBtn} onPress={() => setMostrarFecha(true)}>
             <Text style={styles.fechaBtnTexto}>📅 {fecha.toLocaleDateString('es-CL')}</Text>
@@ -76,65 +75,63 @@ export default function RecordatoriosScreen() {
             <Text style={styles.fechaBtnTexto}>🕐 {String(hora.getHours()).padStart(2,'0')}:{String(hora.getMinutes()).padStart(2,'0')}</Text>
           </TouchableOpacity>
         </View>
-
         {mostrarFecha && (
-          <DateTimePicker
-            value={fecha}
-            mode="date"
-            onChange={(e, d) => { setMostrarFecha(false); if (d) setFecha(d); }}
-          />
+          <DateTimePicker value={fecha} mode="date" onChange={(e, d) => { setMostrarFecha(false); if (d) setFecha(d); }} />
         )}
         {mostrarHora && (
-          <DateTimePicker
-            value={hora}
-            mode="time"
-            onChange={(e, h) => { setMostrarHora(false); if (h) setHora(h); }}
-          />
+          <DateTimePicker value={hora} mode="time" onChange={(e, h) => { setMostrarHora(false); if (h) setHora(h); }} />
         )}
-
         <TouchableOpacity style={styles.btnAgregar} onPress={agregar}>
           <Text style={styles.btnTexto}>+ Agregar recordatorio</Text>
         </TouchableOpacity>
       </View>
 
-      <View style={styles.seccion}>
-        {Recordatorios.length === 0 ? (
-          <View style={styles.tarjeta}>
-            <Text style={styles.tarjetaTexto}>Sin recordatorios aún</Text>
-          </View>
-        ) : (
-          Recordatorios.map(r => (
-            <View key={r.id} style={styles.item}>
-              <View style={{flex:1}}>
-                <Text style={styles.itemTexto}>{r.texto}</Text>
-                <Text style={styles.itemFecha}>📅 {r.fecha} 🕐 {r.hora}</Text>
-              </View>
-              <TouchableOpacity onPress={() => eliminar(r.id)}>
-                <Text style={styles.eliminar}>✕</Text>
-              </TouchableOpacity>
+      <ScrollView style={styles.lista} contentContainerStyle={{paddingBottom: 20}}>
+        <View style={styles.seccion}>
+          {Recordatorios.length === 0 ? (
+            <View style={styles.tarjeta}>
+              <Text style={styles.tarjetaTexto}>Sin recordatorios aún</Text>
             </View>
-          ))
-        )}
-      </View>
-    </ScrollView>
+          ) : (
+            Recordatorios.map(r => (
+              <View key={r.id} style={styles.item}>
+                <View style={styles.itemIconWrap}>
+                  <Text style={{fontSize: 18}}>🔔</Text>
+                </View>
+                <View style={{flex:1}}>
+                  <Text style={styles.itemTexto}>{r.texto}</Text>
+                  <Text style={styles.itemFecha}>📅 {r.fecha} · 🕐 {r.hora}</Text>
+                </View>
+                <TouchableOpacity onPress={() => eliminar(r.id)}>
+                  <Text style={styles.eliminar}>✕</Text>
+                </TouchableOpacity>
+              </View>
+            ))
+          )}
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F7F6F2' },
+  container: { flex: 1, backgroundColor: '#F5F3EE' },
   header: { padding: 24, paddingTop: 60, backgroundColor: '#1A1917' },
-  titulo: { fontSize: 26, fontWeight: 'bold', color: '#FFFFFF' },
-  seccion: { padding: 16 },
-  input: { backgroundColor: '#FFFFFF', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: '#E5E2DA', fontSize: 14, marginBottom: 10 },
+  headerTitulo: { fontSize: 28, fontWeight: 'bold', color: '#FFFFFF' },
+  inputWrap: { margin: 16, backgroundColor: '#FFFFFF', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#E5E2DA' },
+  input: { backgroundColor: '#F5F3EE', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: '#E5E2DA', fontSize: 14, marginBottom: 10 },
   fechaRow: { flexDirection: 'row', gap: 8, marginBottom: 10 },
-  fechaBtn: { flex: 1, backgroundColor: '#FFFFFF', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: '#E5E2DA', alignItems: 'center' },
+  fechaBtn: { flex: 1, backgroundColor: '#F5F3EE', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: '#E5E2DA', alignItems: 'center' },
   fechaBtnTexto: { fontSize: 13, color: '#1A1917' },
   btnAgregar: { backgroundColor: '#1A1917', borderRadius: 10, padding: 14, alignItems: 'center' },
   btnTexto: { color: '#FFFFFF', fontSize: 14, fontWeight: '600' },
-  tarjeta: { backgroundColor: '#FFFFFF', borderRadius: 10, padding: 16, borderWidth: 1, borderColor: '#E5E2DA' },
+  lista: { flex: 1 },
+  seccion: { paddingHorizontal: 16, paddingTop: 4 },
+  tarjeta: { backgroundColor: '#FFFFFF', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: '#E5E2DA' },
   tarjetaTexto: { fontSize: 14, color: '#A8A59E' },
-  item: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 10, padding: 14, marginBottom: 6, borderWidth: 1, borderColor: '#E5E2DA' },
+  item: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 12, padding: 14, marginBottom: 6, borderWidth: 1, borderColor: '#E5E2DA', gap: 10 },
+  itemIconWrap: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#EAF3DE', alignItems: 'center', justifyContent: 'center' },
   itemTexto: { fontSize: 14, color: '#1A1917', fontWeight: '500' },
-  itemFecha: { fontSize: 12, color: '#A8A59E', marginTop: 2 },
-  eliminar: { fontSize: 16, color: '#A8A59E', paddingLeft: 8 },
+  itemFecha: { fontSize: 11, color: '#A8A59E', marginTop: 2 },
+  eliminar: { fontSize: 16, color: '#CCC9C0', paddingLeft: 8 },
 });
