@@ -46,6 +46,7 @@ const styles2 = StyleSheet.create({
 export default function CalendarioScreen() {
   const [tareas, setTareas] = useState<{id: number, texto: string, hecha: boolean, fecha?: string}[]>([]);
   const [recordatorios, setRecordatorios] = useState<{id: number, texto: string, fecha: string, hora: string}[]>([]);
+  const [diarias, setDiarias] = useState<{id: number, texto: string, hecha: boolean}[]>([]);
   const [diaSeleccionado, setDiaSeleccionado] = useState('');
 
   useEffect(() => {
@@ -54,6 +55,8 @@ export default function CalendarioScreen() {
       if (guardadas) setTareas(JSON.parse(guardadas));
       const guardadosRec = await AsyncStorage.getItem('recordatorios');
       if (guardadosRec) setRecordatorios(JSON.parse(guardadosRec));
+      const guardadasDiarias = await AsyncStorage.getItem('diarias');
+      if (guardadasDiarias) setDiarias(JSON.parse(guardadasDiarias));
     };
     cargar();
   }, []);
@@ -89,6 +92,9 @@ export default function CalendarioScreen() {
   const recordatoriosDia = recordatorios.filter(r => r.fecha === diaSeleccionado);
 
   const hoy = new Date();
+  const hoyStr = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}-${String(hoy.getDate()).padStart(2,'0')}`;
+  const totalDiarias = diarias.length;
+  const hechasDiarias = diarias.filter(t => t.hecha).length;
   const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
   const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 
@@ -124,6 +130,15 @@ export default function CalendarioScreen() {
 
       {diaSeleccionado ? (
         <View style={styles.seccion}>
+          {diaSeleccionado === hoyStr && totalDiarias > 0 && (
+            <View style={styles.diariasResumen}>
+              <Text style={styles.secTitulo}>⭐ Diarias</Text>
+              <View style={styles.diariasBar}>
+                <View style={[styles.diariasProgreso, { width: `${Math.round(hechasDiarias/totalDiarias*100)}%` as any }]} />
+              </View>
+              <Text style={styles.diariasTexto}>{hechasDiarias}/{totalDiarias} completadas · {Math.round(hechasDiarias/totalDiarias*100)}%</Text>
+            </View>
+          )}
           <Text style={styles.secTitulo}>📋 Tareas</Text>
           {tareasDia.length === 0 ? (
             <View style={styles.tarjeta}>
@@ -182,4 +197,8 @@ const styles = StyleSheet.create({
   recIconWrap: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#C0DD97', alignItems: 'center', justifyContent: 'center' },
   recTexto: { fontSize: 14, color: '#27500A', fontWeight: '500' },
   recHora: { fontSize: 11, color: '#3B6D11', marginTop: 2 },
+  diariasResumen: { marginBottom: 16 },
+  diariasBar: { height: 6, backgroundColor: '#E5E2DA', borderRadius: 3, overflow: 'hidden', marginVertical: 6 },
+  diariasProgreso: { height: 6, backgroundColor: '#3B6D11', borderRadius: 3 },
+  diariasTexto: { fontSize: 12, color: '#6B6860' },
 });
