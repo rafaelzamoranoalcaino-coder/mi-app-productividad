@@ -29,12 +29,6 @@ export default function DiariasScreen() {
 
   if (!cargado) cargarDiarias();
 
-  const limpiarDiarias = async () => {
-    await AsyncStorage.removeItem('diarias');
-    await AsyncStorage.removeItem('fecha_diarias');
-    setDiarias([]);
-  };
-
   const agregarDiaria = () => {
     if (nuevaDiaria.trim() === '') return;
     const nuevas = [...diarias, { id: Date.now(), texto: nuevaDiaria, hecha: false, seccion: seccionActiva }];
@@ -62,38 +56,39 @@ export default function DiariasScreen() {
   const circunferencia = 2 * Math.PI * radio;
   const progreso = total === 0 ? 0 : (hechas / total) * circunferencia;
 
-  const renderSeccion = (nombre: 'mañana' | 'tarde' | 'noche', emoji: string) => {
+  const secciones = [
+    { id: 'mañana' as const, emoji: '🌅', label: 'Mañana' },
+    { id: 'tarde' as const, emoji: '☀️', label: 'Tarde' },
+    { id: 'noche' as const, emoji: '🌙', label: 'Noche' },
+  ];
+
+  const renderSeccion = (nombre: 'mañana' | 'tarde' | 'noche', emoji: string, label: string) => {
     const tareasFiltradas = diarias.filter(t => t.seccion === nombre);
+    if (tareasFiltradas.length === 0) return null;
     return (
-      <View style={styles.seccion}>
-        <Text style={styles.secTitulo}>{emoji} {nombre.charAt(0).toUpperCase() + nombre.slice(1)}</Text>
-        {tareasFiltradas.length === 0 ? (
-          <View style={styles.tarjeta}>
-            <Text style={styles.tarjetaTexto}>No hay tareas para la {nombre}</Text>
+      <View key={nombre} style={styles.seccion}>
+        <Text style={styles.secTitulo}>{emoji} {label}</Text>
+        {tareasFiltradas.map(t => (
+          <View key={t.id} style={styles.tareaItem}>
+            <TouchableOpacity onPress={() => toggleDiaria(t.id)} style={styles.tareaRow}>
+              <View style={[styles.circulo, t.hecha && styles.circuloHecho]}>
+                {t.hecha && <Text style={styles.check}>✓</Text>}
+              </View>
+              <Text style={[styles.tareaTexto, t.hecha && styles.tareaHecha]}>{t.texto}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => eliminarDiaria(t.id)}>
+              <Text style={styles.eliminar}>✕</Text>
+            </TouchableOpacity>
           </View>
-        ) : (
-          tareasFiltradas.map(t => (
-            <View key={t.id} style={styles.tareaItem}>
-              <TouchableOpacity onPress={() => toggleDiaria(t.id)} style={styles.tareaRow}>
-                <View style={[styles.circulo, t.hecha && styles.circuloHecho]}>
-                  {t.hecha && <Text style={styles.check}>✓</Text>}
-                </View>
-                <Text style={[styles.tareaTexto, t.hecha && styles.tareaHecha]}>{t.texto}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => eliminarDiaria(t.id)}>
-                <Text style={styles.eliminar}>✕</Text>
-              </TouchableOpacity>
-            </View>
-          ))
-        )}
+        ))}
       </View>
     );
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.titulo}>⭐ Diarias</Text>
+        <Text style={styles.headerTitulo}>Diarias</Text>
       </View>
 
       <View style={styles.anilloWrap}>
@@ -101,7 +96,7 @@ export default function DiariasScreen() {
           <Circle cx="70" cy="70" r={radio} stroke="#E5E2DA" strokeWidth="10" fill="none" />
           <Circle
             cx="70" cy="70" r={radio}
-            stroke="#1bcabc"
+            stroke="#3B6D11"
             strokeWidth="10"
             fill="none"
             strokeDasharray={`${progreso} ${circunferencia}`}
@@ -115,15 +110,16 @@ export default function DiariasScreen() {
         </View>
       </View>
 
-      <View style={styles.seccion}>
+      <View style={styles.inputWrap}>
         <View style={styles.selectorRow}>
-          {(['mañana', 'tarde', 'noche'] as const).map(s => (
+          {secciones.map(s => (
             <TouchableOpacity
-              key={s}
-              style={[styles.selectorBtn, seccionActiva === s && styles.selectorActivo]}
-              onPress={() => setSeccionActiva(s)}>
-              <Text style={[styles.selectorTexto, seccionActiva === s && styles.selectorTextoActivo]}>
-                {s.charAt(0).toUpperCase() + s.slice(1)}
+              key={s.id}
+              style={[styles.selectorBtn, seccionActiva === s.id && styles.selectorActivo]}
+              onPress={() => setSeccionActiva(s.id)}>
+              <Text style={styles.selectorEmoji}>{s.emoji}</Text>
+              <Text style={[styles.selectorTexto, seccionActiva === s.id && styles.selectorTextoActivo]}>
+                {s.label}
               </Text>
             </TouchableOpacity>
           ))}
@@ -131,7 +127,7 @@ export default function DiariasScreen() {
         <View style={styles.inputRow}>
           <TextInput
             style={styles.input}
-            placeholder={`Nueva tarea para la ${seccionActiva}...`}
+            placeholder={`Agregar a la ${seccionActiva}...`}
             value={nuevaDiaria}
             onChangeText={setNuevaDiaria}
             onSubmitEditing={agregarDiaria}
@@ -142,38 +138,50 @@ export default function DiariasScreen() {
         </View>
       </View>
 
-      {renderSeccion('mañana', '🌅')}
-      {renderSeccion('tarde', '☀️')}
-      {renderSeccion('noche', '🌙')}
-    </ScrollView>
+      <ScrollView style={styles.lista} contentContainerStyle={{paddingBottom: 20}}>
+        {diarias.length === 0 ? (
+          <View style={styles.seccion}>
+            <View style={styles.tarjeta}>
+              <Text style={styles.tarjetaTexto}>No hay tareas diarias aún</Text>
+            </View>
+          </View>
+        ) : (
+          secciones.map(s => renderSeccion(s.id, s.emoji, s.label))
+        )}
+      </ScrollView>
+    </View>
   );
 }
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F7F6F2' },
+  container: { flex: 1, backgroundColor: '#F5F3EE' },
   header: { padding: 24, paddingTop: 60, backgroundColor: '#1A1917' },
-  titulo: { fontSize: 26, fontWeight: 'bold', color: '#FFFFFF' },
+  headerTitulo: { fontSize: 28, fontWeight: 'bold', color: '#FFFFFF' },
   anilloWrap: { alignItems: 'center', justifyContent: 'center', marginTop: 24, marginBottom: 8 },
   anilloCentro: { position: 'absolute', alignItems: 'center' },
-  anilloNumero: { fontSize: 22, fontWeight: 'bold', color: '#9d14dd' },
-  anilloPct: { fontSize: 13, color: '#8421bd' },
-  seccion: { padding: 16 },
-  tarjeta: { backgroundColor: '#FFFFFF', borderRadius: 10, padding: 16, borderWidth: 1, borderColor: '#E5E2DA' },
-  tarjetaTexto: { fontSize: 14, color: '#A8A59E' },
-  inputRow: { flexDirection: 'row', gap: 8, marginBottom: 10 },
-  input: { flex: 1, backgroundColor: '#FFFFFF', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: '#E5E2DA', fontSize: 14 },
+  anilloNumero: { fontSize: 22, fontWeight: 'bold', color: '#1A1917' },
+  anilloPct: { fontSize: 13, color: '#6B6860' },
+  inputWrap: { margin: 16, backgroundColor: '#FFFFFF', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#E5E2DA' },
+  selectorRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
+  selectorBtn: { flex: 1, padding: 10, borderRadius: 10, borderWidth: 1, borderColor: '#E5E2DA', backgroundColor: '#F5F3EE', alignItems: 'center' },
+  lista: { flex: 1 },
+  selectorActivo: { backgroundColor: '#1A1917', borderColor: '#1A1917' },
+  selectorEmoji: { fontSize: 16, marginBottom: 2 },
+  selectorTexto: { fontSize: 12, fontWeight: '500', color: '#6B6860' },
+  selectorTextoActivo: { color: '#FFFFFF' },
+  inputRow: { flexDirection: 'row', gap: 8 },
+  input: { flex: 1, backgroundColor: '#F5F3EE', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: '#E5E2DA', fontSize: 14 },
   btnAgregar: { backgroundColor: '#1A1917', borderRadius: 10, width: 46, alignItems: 'center', justifyContent: 'center' },
   btnTexto: { color: '#FFFFFF', fontSize: 24, fontWeight: 'bold' },
-  tareaItem: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 10, padding: 14, marginBottom: 6, borderWidth: 1, borderColor: '#E5E2DA' },
+  seccion: { paddingHorizontal: 16, paddingBottom: 8 },
+  secTitulo: { fontSize: 13, fontWeight: '600', color: '#6B6860', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
+  tarjeta: { backgroundColor: '#FFFFFF', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: '#E5E2DA' },
+  tarjetaTexto: { fontSize: 14, color: '#A8A59E' },
+  tareaItem: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 12, padding: 14, marginBottom: 6, borderWidth: 1, borderColor: '#E5E2DA' },
   tareaRow: { flexDirection: 'row', alignItems: 'center', flex: 1, gap: 12 },
-  circulo: { width: 22, height: 22, borderRadius: 11, borderWidth: 1.5, borderColor: '#CCC9C0', alignItems: 'center', justifyContent: 'center' },
+  circulo: { width: 20, height: 20, borderRadius: 10, borderWidth: 1.5, borderColor: '#CCC9C0', alignItems: 'center', justifyContent: 'center' },
   circuloHecho: { backgroundColor: '#3B6D11', borderColor: '#3B6D11' },
-  check: { color: '#FFFFFF', fontSize: 12, fontWeight: 'bold' },
+  check: { color: '#FFFFFF', fontSize: 11, fontWeight: 'bold' },
   tareaTexto: { fontSize: 14, color: '#1A1917', flex: 1 },
   tareaHecha: { textDecorationLine: 'line-through', color: '#A8A59E' },
-  eliminar: { fontSize: 16, color: '#A8A59E', paddingLeft: 8 },
-  selectorRow: { flexDirection: 'row', gap: 8, marginBottom: 10 },
-  selectorBtn: { flex: 1, padding: 10, borderRadius: 10, borderWidth: 1, borderColor: '#E5E2DA', backgroundColor: '#FFFFFF', alignItems: 'center' },
-  selectorActivo: { backgroundColor: '#1A1917', borderColor: '#1A1917' },
-  selectorTexto: { fontSize: 13, fontWeight: '500', color: '#6B6860' },
-  selectorTextoActivo: { color: '#FFFFFF' }
+  eliminar: { fontSize: 16, color: '#CCC9C0', paddingLeft: 8 },
 });

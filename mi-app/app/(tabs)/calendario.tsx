@@ -7,7 +7,7 @@ function DiaPersonalizado({ date, state, marking, onPress }: any) {
   const hoyStr = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}-${String(hoy.getDate()).padStart(2,'0')}`;
   const esHoy = date.dateString === hoyStr;
   const esSeleccionado = marking?.selected;
-  
+
   return (
     <TouchableOpacity onPress={() => onPress(date)} style={styles2.diaWrap}>
       <View style={[
@@ -40,7 +40,7 @@ const styles2 = StyleSheet.create({
   diaTxtSeleccionado: { color: '#FFFFFF' },
   diaDeshabilitado: { color: '#CCC9C0' },
   punto: { width: 5, height: 5, borderRadius: 3, marginTop: 2 },
-  diaHoySeleccionado: { width: 38, height: 38, borderRadius: 10, backgroundColor: '#1A1917', borderWidth: 3, borderColor: '#3B6D11' },
+  diaHoySeleccionado: { backgroundColor: '#1A1917', borderWidth: 3, borderColor: '#3B6D11' },
 });
 
 export default function CalendarioScreen() {
