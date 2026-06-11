@@ -1,8 +1,9 @@
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';import { Calendar } from 'react-native-calendars';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState, useEffect } from 'react';
+import { useTema } from '../contexto-tema';
 
-function DiaPersonalizado({ date, state, marking, onPress }: any) {
+function DiaPersonalizado({ date, state, marking, onPress, acento, header }: any) {
   const hoy = new Date();
   const hoyStr = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}-${String(hoy.getDate()).padStart(2,'0')}`;
   const esHoy = date.dateString === hoyStr;
@@ -12,9 +13,9 @@ function DiaPersonalizado({ date, state, marking, onPress }: any) {
     <TouchableOpacity onPress={() => onPress(date)} style={styles2.diaWrap}>
       <View style={[
         styles2.dia,
-        esHoy && styles2.diaHoy,
-        esSeleccionado && styles2.diaSeleccionado,
-        esHoy && esSeleccionado && styles2.diaHoySeleccionado,
+        esHoy && [styles2.diaHoy, { backgroundColor: acento || '#3B6D11' }],
+        esSeleccionado && [styles2.diaSeleccionado, { backgroundColor: header || '#1A1917' }],
+        esHoy && esSeleccionado && [styles2.diaHoySeleccionado, { backgroundColor: header || '#1A1917', borderColor: acento || '#3B6D11' }],
       ]}>
         <Text style={[
           styles2.diaTxt,
@@ -44,6 +45,7 @@ const styles2 = StyleSheet.create({
 });
 
 export default function CalendarioScreen() {
+  const { paleta } = useTema();
   const [tareas, setTareas] = useState<{id: number, texto: string, hecha: boolean, fecha?: string}[]>([]);
   const [recordatorios, setRecordatorios] = useState<{id: number, texto: string, fecha: string, hora: string}[]>([]);
   const [diarias, setDiarias] = useState<{id: number, texto: string, hecha: boolean}[]>([]);
@@ -99,30 +101,30 @@ export default function CalendarioScreen() {
   const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
+    <ScrollView style={{ flex: 1, backgroundColor: paleta.fondo }}>
+      <View style={[styles.header, { backgroundColor: paleta.header }]}>
         <Text style={styles.headerFecha}>{dias[hoy.getDay()]}, {hoy.getDate()} de {meses[hoy.getMonth()]}</Text>
         <Text style={styles.headerTitulo}>Calendario</Text>
       </View>
 
-      <View style={styles.calWrap}>
+      <View style={[styles.calWrap, { borderColor: paleta.borde }]}>
         <Calendar
           markedDates={markedDates}
           onDayPress={(day: any) => setDiaSeleccionado(day.dateString)}
           dayComponent={(props: any) => (
-            <DiaPersonalizado {...props} onPress={(date: any) => setDiaSeleccionado(date.dateString)} />
+            <DiaPersonalizado {...props} onPress={(date: any) => setDiaSeleccionado(date.dateString)} acento={paleta.acento} header={paleta.header} />
           )}
           theme={{
-            backgroundColor: '#FFFFFF',
-            calendarBackground: '#FFFFFF',
+            backgroundColor: paleta.superficie,
+            calendarBackground: paleta.superficie,
             todayTextColor: '#FFFFFF',
-            todayBackgroundColor: '#3B6D11',
-            selectedDayBackgroundColor: '#1A1917',
+            todayBackgroundColor: paleta.acento,
+            selectedDayBackgroundColor: paleta.header,
             selectedDayTextColor: '#FFFFFF',
-            arrowColor: '#1A1917',
-            monthTextColor: '#1A1917',
-            dayTextColor: '#1A1917',
-            textDisabledColor: '#CCC9C0',
+            arrowColor: paleta.header,
+            monthTextColor: paleta.texto,
+            dayTextColor: paleta.texto,
+            textDisabledColor: paleta.borde,
             todayDotColor: '#FFFFFF',
           }}
         />
@@ -132,40 +134,39 @@ export default function CalendarioScreen() {
         <View style={styles.seccion}>
           {diaSeleccionado === hoyStr && totalDiarias > 0 && (
             <View style={styles.diariasResumen}>
-              <Text style={styles.secTitulo}>⭐ Diarias</Text>
-              <View style={styles.diariasBar}>
-                <View style={[styles.diariasProgreso, { width: `${Math.round(hechasDiarias/totalDiarias*100)}%` as any }]} />
+              <Text style={[styles.secTitulo, { color: paleta.textoSuave }]}>⭐ Diarias</Text>
+              <View style={[styles.diariasBar, { backgroundColor: paleta.borde }]}>
+                <View style={[styles.diariasProgreso, { width: `${Math.round(hechasDiarias/totalDiarias*100)}%` as any, backgroundColor: paleta.acento }]} />
               </View>
-              <Text style={styles.diariasTexto}>{hechasDiarias}/{totalDiarias} completadas · {Math.round(hechasDiarias/totalDiarias*100)}%</Text>
+              <Text style={[styles.diariasTexto, { color: paleta.textoSuave }]}>{hechasDiarias}/{totalDiarias} completadas · {Math.round(hechasDiarias/totalDiarias*100)}%</Text>
             </View>
           )}
-          <Text style={styles.secTitulo}>📋 Tareas</Text>
+          <Text style={[styles.secTitulo, { color: paleta.textoSuave }]}>📋 Tareas</Text>
           {tareasDia.length === 0 ? (
-            <View style={styles.tarjeta}>
-              <Text style={styles.tarjetaTexto}>Sin tareas para este día</Text>
+            <View style={[styles.tarjeta, { backgroundColor: paleta.superficie, borderColor: paleta.borde }]}>
+              <Text style={[styles.tarjetaTexto, { color: paleta.textoMuted }]}>Sin tareas para este día</Text>
             </View>
           ) : (
             tareasDia.map(t => (
-              <View key={t.id} style={styles.tareaItem}>
-                <View style={[styles.circulo, t.hecha && styles.circuloHecho]}>
+              <View key={t.id} style={[styles.tareaItem, { backgroundColor: paleta.superficie, borderColor: paleta.borde }]}>
+                <View style={[styles.circulo, t.hecha && { backgroundColor: paleta.acento, borderColor: paleta.acento }]}>
                   {t.hecha && <Text style={styles.check}>✓</Text>}
                 </View>
-                <Text style={[styles.tareaTexto, t.hecha && styles.tareaHecha]}>{t.texto}</Text>
+                <Text style={[styles.tareaTexto, { color: paleta.texto }, t.hecha && styles.tareaHecha]}>{t.texto}</Text>
               </View>
             ))
           )}
-
           {recordatoriosDia.length > 0 && (
-            <View style={{marginTop: 16}}>
-              <Text style={styles.secTitulo}>🔔 Recordatorios</Text>
+            <View style={{ marginTop: 16 }}>
+              <Text style={[styles.secTitulo, { color: paleta.textoSuave }]}>🔔 Recordatorios</Text>
               {recordatoriosDia.map(r => (
-                <View key={r.id} style={styles.recItem}>
-                  <View style={styles.recIconWrap}>
-                    <Text style={{fontSize: 16}}>🔔</Text>
+                <View key={r.id} style={[styles.recItem, { backgroundColor: paleta.acentoSuave }]}>
+                  <View style={[styles.recIconWrap, { backgroundColor: paleta.borde }]}>
+                    <Text style={{ fontSize: 16 }}>🔔</Text>
                   </View>
-                  <View style={{flex:1}}>
-                    <Text style={styles.recTexto}>{r.texto}</Text>
-                    <Text style={styles.recHora}>🕐 {r.hora}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.recTexto, { color: paleta.texto }]}>{r.texto}</Text>
+                    <Text style={[styles.recHora, { color: paleta.acento }]}>🕐 {r.hora}</Text>
                   </View>
                 </View>
               ))}
@@ -176,7 +177,6 @@ export default function CalendarioScreen() {
     </ScrollView>
   );
 }
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F5F3EE' },
   header: { padding: 24, paddingTop: 60, backgroundColor: '#1A1917' },

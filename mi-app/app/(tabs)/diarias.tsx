@@ -2,8 +2,10 @@ import { StyleSheet, Text, View, ScrollView, TextInput, TouchableOpacity } from 
 import { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Svg, { Circle } from 'react-native-svg';
+import { useTema } from '../contexto-tema';
 
 export default function DiariasScreen() {
+  const { paleta } = useTema();
   const [diarias, setDiarias] = useState<{id: number, texto: string, hecha: boolean, seccion: 'mañana' | 'tarde' | 'noche'}[]>([]);
   const [nuevaDiaria, setNuevaDiaria] = useState('');
   const [seccionActiva, setSeccionActiva] = useState<'mañana' | 'tarde' | 'noche'>('mañana');
@@ -67,14 +69,14 @@ export default function DiariasScreen() {
     if (tareasFiltradas.length === 0) return null;
     return (
       <View key={nombre} style={styles.seccion}>
-        <Text style={styles.secTitulo}>{emoji} {label}</Text>
+        <Text style={[styles.secTitulo, { color: paleta.textoSuave }]}>{emoji} {label}</Text>
         {tareasFiltradas.map(t => (
-          <View key={t.id} style={styles.tareaItem}>
+          <View key={t.id} style={[styles.tareaItem, { backgroundColor: paleta.superficie, borderColor: paleta.borde }]}>
             <TouchableOpacity onPress={() => toggleDiaria(t.id)} style={styles.tareaRow}>
-              <View style={[styles.circulo, t.hecha && styles.circuloHecho]}>
+              <View style={[styles.circulo, t.hecha && { backgroundColor: paleta.acento, borderColor: paleta.acento }]}>
                 {t.hecha && <Text style={styles.check}>✓</Text>}
               </View>
-              <Text style={[styles.tareaTexto, t.hecha && styles.tareaHecha]}>{t.texto}</Text>
+              <Text style={[styles.tareaTexto, { color: paleta.texto }, t.hecha && styles.tareaHecha]}>{t.texto}</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => eliminarDiaria(t.id)}>
               <Text style={styles.eliminar}>✕</Text>
@@ -86,17 +88,17 @@ export default function DiariasScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View style={{ flex: 1, backgroundColor: paleta.fondo }}>
+      <View style={[styles.header, { backgroundColor: paleta.header }]}>
         <Text style={styles.headerTitulo}>Diarias</Text>
       </View>
 
       <View style={styles.anilloWrap}>
         <Svg width={140} height={140} viewBox="0 0 140 140">
-          <Circle cx="70" cy="70" r={radio} stroke="#E5E2DA" strokeWidth="10" fill="none" />
+          <Circle cx="70" cy="70" r={radio} stroke={paleta.borde} strokeWidth="10" fill="none" />
           <Circle
             cx="70" cy="70" r={radio}
-            stroke="#3B6D11"
+            stroke={paleta.acento}
             strokeWidth="10"
             fill="none"
             strokeDasharray={`${progreso} ${circunferencia}`}
@@ -105,20 +107,22 @@ export default function DiariasScreen() {
           />
         </Svg>
         <View style={styles.anilloCentro}>
-          <Text style={styles.anilloNumero}>{hechas}/{total}</Text>
-          <Text style={styles.anilloPct}>{porcentaje}%</Text>
+          <Text style={[styles.anilloNumero, { color: paleta.texto }]}>{hechas}/{total}</Text>
+          <Text style={[styles.anilloPct, { color: paleta.textoSuave }]}>{porcentaje}%</Text>
         </View>
       </View>
 
-      <View style={styles.inputWrap}>
+      <View style={[styles.inputWrap, { backgroundColor: paleta.superficie, borderColor: paleta.borde }]}>
         <View style={styles.selectorRow}>
           {secciones.map(s => (
             <TouchableOpacity
               key={s.id}
-              style={[styles.selectorBtn, seccionActiva === s.id && styles.selectorActivo]}
+              style={[styles.selectorBtn, { backgroundColor: paleta.fondo, borderColor: paleta.borde },
+                seccionActiva === s.id && { backgroundColor: paleta.header, borderColor: paleta.header }]}
               onPress={() => setSeccionActiva(s.id)}>
               <Text style={styles.selectorEmoji}>{s.emoji}</Text>
-              <Text style={[styles.selectorTexto, seccionActiva === s.id && styles.selectorTextoActivo]}>
+              <Text style={[styles.selectorTexto, { color: paleta.textoSuave },
+                seccionActiva === s.id && { color: '#FFFFFF' }]}>
                 {s.label}
               </Text>
             </TouchableOpacity>
@@ -126,13 +130,13 @@ export default function DiariasScreen() {
         </View>
         <View style={styles.inputRow}>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: paleta.fondo, borderColor: paleta.borde }]}
             placeholder={`Agregar a la ${seccionActiva}...`}
             value={nuevaDiaria}
             onChangeText={setNuevaDiaria}
             onSubmitEditing={agregarDiaria}
           />
-          <TouchableOpacity style={styles.btnAgregar} onPress={agregarDiaria}>
+          <TouchableOpacity style={[styles.btnAgregar, { backgroundColor: paleta.header }]} onPress={agregarDiaria}>
             <Text style={styles.btnTexto}>+</Text>
           </TouchableOpacity>
         </View>
@@ -141,8 +145,8 @@ export default function DiariasScreen() {
       <ScrollView style={styles.lista} contentContainerStyle={{paddingBottom: 20}}>
         {diarias.length === 0 ? (
           <View style={styles.seccion}>
-            <View style={styles.tarjeta}>
-              <Text style={styles.tarjetaTexto}>No hay tareas diarias aún</Text>
+            <View style={[styles.tarjeta, { backgroundColor: paleta.superficie, borderColor: paleta.borde }]}>
+              <Text style={[styles.tarjetaTexto, { color: paleta.textoMuted }]}>No hay tareas diarias aún</Text>
             </View>
           </View>
         ) : (

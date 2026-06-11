@@ -29,13 +29,9 @@ export const Colors = {
 
 export const Fonts = Platform.select({
   ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
     sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
     serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
     rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
     mono: 'ui-monospace',
   },
   default: {
@@ -51,3 +47,63 @@ export const Fonts = Platform.select({
     mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
   },
 });
+
+export const Paletas = {
+  oscuro: {
+    header: '#1A1917',
+    fondo: '#F5F3EE',
+    superficie: '#FFFFFF',
+    borde: '#E5E2DA',
+    acento: '#3B6D11',
+    acentoSuave: '#EAF3DE',
+    texto: '#1A1917',
+    textoSuave: '#6B6860',
+    textoMuted: '#A8A59E',
+  },
+  pastel: {
+    header: '#7C5C8A',
+    fondo: '#F5F0FA',
+    superficie: '#FFFFFF',
+    borde: '#E8DDEF',
+    acento: '#A66BBF',
+    acentoSuave: '#EFE4F7',
+    texto: '#3B2650',
+    textoSuave: '#7B5E8A',
+    textoMuted: '#B89EC7',
+  },
+  vivos: {
+    header: '#0C447C',
+    fondo: '#F0F6FF',
+    superficie: '#FFFFFF',
+    borde: '#C8DEFF',
+    acento: '#D85A30',
+    acentoSuave: '#FDEEE8',
+    texto: '#0C1F3F',
+    textoSuave: '#3A5A8A',
+    textoMuted: '#7A9CC0',
+  },
+  grises: {
+    header: '#2C2C2C',
+    fondo: '#F2F2F2',
+    superficie: '#FFFFFF',
+    borde: '#DEDEDE',
+    acento: '#555555',
+    acentoSuave: '#EBEBEB',
+    texto: '#1A1A1A',
+    textoSuave: '#555555',
+    textoMuted: '#999999',
+  },
+  natural: {
+    header: '#2D4A1E',
+    fondo: '#F5F0E8',
+    superficie: '#FFFDF7',
+    borde: '#DDD5C0',
+    acento: '#5A8A2E',
+    acentoSuave: '#EAF3DE',
+    texto: '#1E2D10',
+    textoSuave: '#4A6A30',
+    textoMuted: '#8A9E70',
+  },
+};
+
+export type PaletaNombre = keyof typeof Paletas;

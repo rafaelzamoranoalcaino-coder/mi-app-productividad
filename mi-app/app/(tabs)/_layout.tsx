@@ -58,6 +58,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={26} name="bell.fill" color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="configuracion"
+        options={{
+          title: 'Cfg',
+          tabBarIcon: ({ color }) => <IconSymbol size={26} name="gearshape.fill" color={color} />,
+        }}
+      />
     </Tabs>
   );
 }
