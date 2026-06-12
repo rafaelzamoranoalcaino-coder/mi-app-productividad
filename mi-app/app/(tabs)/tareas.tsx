@@ -3,6 +3,7 @@ import { useState } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
+import { useTema } from '../contexto-tema';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -15,7 +16,8 @@ Notifications.setNotificationHandler({
 });
 
 export default function TareasScreen() {
-const [tareas, setTareas] = useState<{id: number, texto: string, hecha: boolean, fecha?: Date}[]>([]);
+  const { paleta } = useTema();
+  const [tareas, setTareas] = useState<{id: number, texto: string, hecha: boolean, fecha?: Date}[]>([]);
   const [nuevaTarea, setNuevaTarea] = useState('');
   const [cargado, setCargado] = useState(false);
   const [fechaSeleccionada, setFechaSeleccionada] = useState<Date | undefined>(undefined);
@@ -88,29 +90,29 @@ const [tareas, setTareas] = useState<{id: number, texto: string, hecha: boolean,
   };
   
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View style={{ flex: 1, backgroundColor: paleta.fondo }}>
+      <View style={[styles.header, { backgroundColor: paleta.header }]}>
         <Text style={styles.headerTitulo}>📋 Tareas</Text>
       </View>
 
-      <View style={styles.inputWrap}>
+      <View style={[styles.inputWrap, { backgroundColor: paleta.superficie, borderColor: paleta.borde }]}>
         <View style={styles.inputRow}>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: paleta.fondo, borderColor: paleta.borde }]}
             placeholder="Nueva tarea..."
             value={nuevaTarea}
             onChangeText={setNuevaTarea}
             onSubmitEditing={agregarTarea}
           />
-          <TouchableOpacity style={styles.btnFecha} onPress={() => setMostrarFecha(true)}>
+          <TouchableOpacity style={[styles.btnFecha, { backgroundColor: paleta.fondo, borderColor: paleta.borde }]} onPress={() => setMostrarFecha(true)}>
             <Text style={styles.btnFechaTexto}>📅</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.btnAgregar} onPress={agregarTarea}>
+          <TouchableOpacity style={[styles.btnAgregar, { backgroundColor: paleta.header }]} onPress={agregarTarea}>
             <Text style={styles.btnTexto}>+</Text>
           </TouchableOpacity>
         </View>
         {fechaSeleccionada && (
-          <Text style={styles.fechaPreview}>📅 {fechaSeleccionada.toLocaleDateString('es-CL')}</Text>
+          <Text style={[styles.fechaPreview, { color: paleta.textoSuave }]}>📅 {fechaSeleccionada.toLocaleDateString('es-CL')}</Text>
         )}
         {mostrarFecha && (
           <DateTimePicker
@@ -128,21 +130,21 @@ const [tareas, setTareas] = useState<{id: number, texto: string, hecha: boolean,
       <ScrollView style={styles.lista} contentContainerStyle={{paddingBottom: 20}}>
         {tareas.length === 0 ? (
           <View style={styles.seccion}>
-            <View style={styles.tarjeta}>
-              <Text style={styles.tarjetaTexto}>No hay tareas aún</Text>
+            <View style={[styles.tarjeta, { backgroundColor: paleta.superficie, borderColor: paleta.borde }]}>
+              <Text style={[styles.tarjetaTexto, { color: paleta.textoMuted }]}>No hay tareas aún</Text>
             </View>
           </View>
         ) : (
           <View style={styles.seccion}>
             {tareas.map(t => (
-              <View key={t.id} style={styles.tareaItem}>
+              <View key={t.id} style={[styles.tareaItem, { backgroundColor: paleta.superficie, borderColor: paleta.borde }]}>
                 <TouchableOpacity onPress={() => toggleTarea(t.id)} style={styles.tareaRow}>
-                  <View style={[styles.circulo, t.hecha && styles.circuloHecho]}>
+                  <View style={[styles.circulo, t.hecha && { backgroundColor: paleta.acento, borderColor: paleta.acento }]}>
                     {t.hecha && <Text style={styles.check}>✓</Text>}
                   </View>
                   <View style={{flex:1}}>
-                    <Text style={[styles.tareaTexto, t.hecha && styles.tareaHecha]}>{t.texto}</Text>
-                    {t.fecha && <Text style={styles.fechaTarea}>📅 {new Date(t.fecha).toLocaleDateString('es-CL')}</Text>}
+                    <Text style={[styles.tareaTexto, { color: paleta.texto }, t.hecha && styles.tareaHecha]}>{t.texto}</Text>
+                    {t.fecha && <Text style={[styles.fechaTarea, { color: paleta.textoMuted }]}>📅 {new Date(t.fecha).toLocaleDateString('es-CL')}</Text>}
                   </View>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => eliminarTarea(t.id)}>

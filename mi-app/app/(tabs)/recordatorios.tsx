@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Notifications from 'expo-notifications';
+import { useTema } from '../contexto-tema';
 
 export default function RecordatoriosScreen() {
+  const { paleta } = useTema();
   const [Recordatorios, setRecordatorios] = useState<{id: number, texto: string, fecha: string, hora: string}[]>([]);
   const [nuevo, setNuevo] = useState('');
   const [fecha, setFecha] = useState(new Date());
@@ -55,24 +57,24 @@ export default function RecordatoriosScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View style={{ flex: 1, backgroundColor: paleta.fondo }}>
+      <View style={[styles.header, { backgroundColor: paleta.header }]}>
         <Text style={styles.headerTitulo}>🔔 Recordatorios</Text>
       </View>
 
-      <View style={styles.inputWrap}>
+      <View style={[styles.inputWrap, { backgroundColor: paleta.superficie, borderColor: paleta.borde }]}>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: paleta.fondo, borderColor: paleta.borde }]}
           placeholder="Nombre del recordatorio..."
           value={nuevo}
           onChangeText={setNuevo}
         />
         <View style={styles.fechaRow}>
-          <TouchableOpacity style={styles.fechaBtn} onPress={() => setMostrarFecha(true)}>
-            <Text style={styles.fechaBtnTexto}>📅 {fecha.toLocaleDateString('es-CL')}</Text>
+          <TouchableOpacity style={[styles.fechaBtn, { backgroundColor: paleta.fondo, borderColor: paleta.borde }]} onPress={() => setMostrarFecha(true)}>
+            <Text style={[styles.fechaBtnTexto, { color: paleta.texto }]}>📅 {fecha.toLocaleDateString('es-CL')}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.fechaBtn} onPress={() => setMostrarHora(true)}>
-            <Text style={styles.fechaBtnTexto}>🕐 {String(hora.getHours()).padStart(2,'0')}:{String(hora.getMinutes()).padStart(2,'0')}</Text>
+          <TouchableOpacity style={[styles.fechaBtn, { backgroundColor: paleta.fondo, borderColor: paleta.borde }]} onPress={() => setMostrarHora(true)}>
+            <Text style={[styles.fechaBtnTexto, { color: paleta.texto }]}>🕐 {String(hora.getHours()).padStart(2,'0')}:{String(hora.getMinutes()).padStart(2,'0')}</Text>
           </TouchableOpacity>
         </View>
         {mostrarFecha && (
@@ -81,7 +83,7 @@ export default function RecordatoriosScreen() {
         {mostrarHora && (
           <DateTimePicker value={hora} mode="time" onChange={(e, h) => { setMostrarHora(false); if (h) setHora(h); }} />
         )}
-        <TouchableOpacity style={styles.btnAgregar} onPress={agregar}>
+        <TouchableOpacity style={[styles.btnAgregar, { backgroundColor: paleta.header }]} onPress={agregar}>
           <Text style={styles.btnTexto}>+ Agregar recordatorio</Text>
         </TouchableOpacity>
       </View>
@@ -89,18 +91,18 @@ export default function RecordatoriosScreen() {
       <ScrollView style={styles.lista} contentContainerStyle={{paddingBottom: 20}}>
         <View style={styles.seccion}>
           {Recordatorios.length === 0 ? (
-            <View style={styles.tarjeta}>
-              <Text style={styles.tarjetaTexto}>Sin recordatorios aún</Text>
+            <View style={[styles.tarjeta, { backgroundColor: paleta.superficie, borderColor: paleta.borde }]}>
+              <Text style={[styles.tarjetaTexto, { color: paleta.textoMuted }]}>Sin recordatorios aún</Text>
             </View>
           ) : (
             Recordatorios.map(r => (
-              <View key={r.id} style={styles.item}>
-                <View style={styles.itemIconWrap}>
+              <View key={r.id} style={[styles.item, { backgroundColor: paleta.superficie, borderColor: paleta.borde }]}>
+                <View style={[styles.itemIconWrap, { backgroundColor: paleta.acentoSuave }]}>
                   <Text style={{fontSize: 18}}>🔔</Text>
                 </View>
                 <View style={{flex:1}}>
-                  <Text style={styles.itemTexto}>{r.texto}</Text>
-                  <Text style={styles.itemFecha}>📅 {r.fecha} · 🕐 {r.hora}</Text>
+                  <Text style={[styles.itemTexto, { color: paleta.texto }]}>{r.texto}</Text>
+                  <Text style={[styles.itemFecha, { color: paleta.textoMuted }]}>📅 {r.fecha} · 🕐 {r.hora}</Text>
                 </View>
                 <TouchableOpacity onPress={() => eliminar(r.id)}>
                   <Text style={styles.eliminar}>✕</Text>

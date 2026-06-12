@@ -4,14 +4,15 @@ import { StyleSheet, Pressable } from 'react-native';
 import { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import * as Haptics from 'expo-haptics';
+import { useTema } from '../contexto-tema';
 
-function TabButton(props: BottomTabBarButtonProps) {
+function TabButton({ acentoColor, ...props }: BottomTabBarButtonProps & { acentoColor: string }) {
   const isActive = props.accessibilityState?.selected;
   return (
     <Pressable
       onPress={props.onPress}
       onLongPress={props.onLongPress}
-      style={[styles.btn, isActive && styles.btnActivo]}
+      style={[styles.btn, isActive && { backgroundColor: acentoColor + '40' }]}
       onPressIn={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
     >
       {props.children}
@@ -20,14 +21,23 @@ function TabButton(props: BottomTabBarButtonProps) {
 }
 
 export default function TabLayout() {
+  const { paleta } = useTema();
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarButton: (props) => <TabButton {...props} />,
+        tabBarButton: (props) => <TabButton {...props} acentoColor={paleta.acento} />,
         tabBarActiveTintColor: '#FFFFFF',
-        tabBarInactiveTintColor: '#888884',
-        tabBarStyle: styles.tabBar,
+        tabBarInactiveTintColor: paleta.textoMuted,
+        tabBarStyle: {
+          backgroundColor: paleta.header,
+          borderTopWidth: 0,
+          height: 80,
+          paddingHorizontal: 6,
+          paddingBottom: 8,
+          paddingTop: 8,
+        },
         tabBarLabelStyle: styles.label,
       }}>
       <Tabs.Screen
@@ -70,14 +80,6 @@ export default function TabLayout() {
 }
 
 const styles = StyleSheet.create({
-  tabBar: {
-    backgroundColor: '#1A1917',
-    borderTopWidth: 0,
-    height: 80,
-    paddingHorizontal: 6,
-    paddingBottom: 8,
-    paddingTop: 8,
-  },
   label: {
     fontSize: 12,
     fontWeight: '700',
@@ -89,8 +91,5 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     marginHorizontal: 3,
     marginVertical: 6,
-  },
-  btnActivo: {
-    backgroundColor: '#3D3A36',
   },
 });
