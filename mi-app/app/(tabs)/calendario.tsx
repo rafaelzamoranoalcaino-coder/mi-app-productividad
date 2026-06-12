@@ -2,6 +2,8 @@ import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-nati
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState, useEffect } from 'react';
 import { useTema } from '../contexto-tema';
+import { useFocusEffect } from 'expo-router';
+import { useCallback } from 'react';
 
 function DiaPersonalizado({ date, state, marking, onPress, acento, header }: any) {
   const hoy = new Date();
@@ -51,17 +53,19 @@ export default function CalendarioScreen() {
   const [diarias, setDiarias] = useState<{id: number, texto: string, hecha: boolean}[]>([]);
   const [diaSeleccionado, setDiaSeleccionado] = useState('');
 
-  useEffect(() => {
-    const cargar = async () => {
-      const guardadas = await AsyncStorage.getItem('tareas');
-      if (guardadas) setTareas(JSON.parse(guardadas));
-      const guardadosRec = await AsyncStorage.getItem('recordatorios');
-      if (guardadosRec) setRecordatorios(JSON.parse(guardadosRec));
-      const guardadasDiarias = await AsyncStorage.getItem('diarias');
-      if (guardadasDiarias) setDiarias(JSON.parse(guardadasDiarias));
-    };
-    cargar();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      const cargar = async () => {
+        const guardadas = await AsyncStorage.getItem('tareas');
+        if (guardadas) setTareas(JSON.parse(guardadas));
+        const guardadosRec = await AsyncStorage.getItem('recordatorios');
+        if (guardadosRec) setRecordatorios(JSON.parse(guardadosRec));
+        const guardadasDiarias = await AsyncStorage.getItem('diarias');
+        if (guardadasDiarias) setDiarias(JSON.parse(guardadasDiarias));
+      };
+      cargar();
+    }, [])
+  );
 
   const markedDates: any = {};
   tareas.forEach(t => {
@@ -97,6 +101,8 @@ export default function CalendarioScreen() {
   const hoyStr = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}-${String(hoy.getDate()).padStart(2,'0')}`;
   const totalDiarias = diarias.length;
   const hechasDiarias = diarias.filter(t => t.hecha).length;
+  const porcentajeDiarias = totalDiarias === 0 ? 0 : Math.round(hechasDiarias / totalDiarias * 100);
+  const recordatoriosHoy = recordatorios.filter(r => r.fecha === hoyStr).length;
   const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
   const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 
@@ -130,17 +136,26 @@ export default function CalendarioScreen() {
         />
       </View>
 
+      <View style={[styles.resumenWrap, { backgroundColor: paleta.superficie, borderColor: paleta.borde }]}>
+        <Text style={[styles.resumenTitulo, { color: paleta.textoSuave }]}>HOY</Text>
+        <View style={styles.resumenRow}>
+          <View style={[styles.resumenCard, { backgroundColor: paleta.fondo, borderColor: paleta.borde }]}>
+            <Text style={[styles.resumenNum, { color: paleta.texto }]}>{tareas.filter(t => !t.hecha).length}</Text>
+            <Text style={[styles.resumenLabel, { color: paleta.textoMuted }]}>Tareas{'\n'}pendientes</Text>
+          </View>
+          <View style={[styles.resumenCard, { backgroundColor: paleta.fondo, borderColor: paleta.borde }]}>
+            <Text style={[styles.resumenNum, { color: paleta.acento }]}>{porcentajeDiarias}%</Text>
+            <Text style={[styles.resumenLabel, { color: paleta.textoMuted }]}>Diarias{'\n'}completadas</Text>
+          </View>
+          <View style={[styles.resumenCard, { backgroundColor: paleta.fondo, borderColor: paleta.borde }]}>
+            <Text style={[styles.resumenNum, { color: paleta.texto }]}>{recordatoriosHoy}</Text>
+            <Text style={[styles.resumenLabel, { color: paleta.textoMuted }]}>Recordatorios{'\n'}hoy</Text>
+          </View>
+        </View>
+</View>
+
       {diaSeleccionado ? (
         <View style={styles.seccion}>
-          {diaSeleccionado === hoyStr && totalDiarias > 0 && (
-            <View style={styles.diariasResumen}>
-              <Text style={[styles.secTitulo, { color: paleta.textoSuave }]}>⭐ Diarias</Text>
-              <View style={[styles.diariasBar, { backgroundColor: paleta.borde }]}>
-                <View style={[styles.diariasProgreso, { width: `${Math.round(hechasDiarias/totalDiarias*100)}%` as any, backgroundColor: paleta.acento }]} />
-              </View>
-              <Text style={[styles.diariasTexto, { color: paleta.textoSuave }]}>{hechasDiarias}/{totalDiarias} completadas · {Math.round(hechasDiarias/totalDiarias*100)}%</Text>
-            </View>
-          )}
           <Text style={[styles.secTitulo, { color: paleta.textoSuave }]}>📋 Tareas</Text>
           {tareasDia.length === 0 ? (
             <View style={[styles.tarjeta, { backgroundColor: paleta.superficie, borderColor: paleta.borde }]}>
@@ -201,4 +216,10 @@ const styles = StyleSheet.create({
   diariasBar: { height: 6, backgroundColor: '#E5E2DA', borderRadius: 3, overflow: 'hidden', marginVertical: 6 },
   diariasProgreso: { height: 6, backgroundColor: '#3B6D11', borderRadius: 3 },
   diariasTexto: { fontSize: 12, color: '#6B6860' },
+  resumenWrap: { margin: 16, borderRadius: 16, padding: 14, borderWidth: 1 },
+  resumenTitulo: { fontSize: 11, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 },
+  resumenRow: { flexDirection: 'row', gap: 8 },
+  resumenCard: { flex: 1, borderRadius: 12, padding: 12, borderWidth: 1, alignItems: 'center' },
+  resumenNum: { fontSize: 22, fontWeight: 'bold', marginBottom: 4 },
+  resumenLabel: { fontSize: 11, textAlign: 'center', lineHeight: 15 },
 });
