@@ -1,6 +1,5 @@
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';import { Calendar } from 'react-native-calendars';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';import { useState, useEffect } from 'react';
 import { useTema } from '../contexto-tema';
 import { useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
@@ -51,8 +50,10 @@ export default function CalendarioScreen() {
   const [tareas, setTareas] = useState<{id: number, texto: string, hecha: boolean, fecha?: string}[]>([]);
   const [recordatorios, setRecordatorios] = useState<{id: number, texto: string, fecha: string, hora: string}[]>([]);
   const [diarias, setDiarias] = useState<{id: number, texto: string, hecha: boolean}[]>([]);
+  const [historialDiarias, setHistorialDiarias] = useState<{[fecha: string]: {hechas: number, total: number}}>({});
   const [diaSeleccionado, setDiaSeleccionado] = useState('');
-
+  
+  
   useFocusEffect(
     useCallback(() => {
       const cargar = async () => {
@@ -62,6 +63,8 @@ export default function CalendarioScreen() {
         if (guardadosRec) setRecordatorios(JSON.parse(guardadosRec));
         const guardadasDiarias = await AsyncStorage.getItem('diarias');
         if (guardadasDiarias) setDiarias(JSON.parse(guardadasDiarias));
+        const historial = await AsyncStorage.getItem('historial_diarias');
+        if (historial) setHistorialDiarias(JSON.parse(historial));
       };
       cargar();
     }, [])
@@ -156,6 +159,20 @@ export default function CalendarioScreen() {
 
       {diaSeleccionado ? (
         <View style={styles.seccion}>
+          {diaSeleccionado === hoyStr ? (
+            <View style={[styles.historialCard, { backgroundColor: paleta.acentoSuave, borderColor: paleta.borde }]}>
+              <Text style={[styles.secTitulo, { color: paleta.textoSuave }]}>⭐ Diarias hoy</Text>
+              <Text style={[styles.historialTexto, { color: paleta.texto }]}>{hechasDiarias}/{totalDiarias} completadas · {porcentajeDiarias}%</Text>
+            </View>
+          ) : historialDiarias[diaSeleccionado] ? (
+            <View style={[styles.historialCard, { backgroundColor: paleta.acentoSuave, borderColor: paleta.borde }]}>
+              <Text style={[styles.secTitulo, { color: paleta.textoSuave }]}>⭐ Diarias ese día</Text>
+              <Text style={[styles.historialTexto, { color: paleta.texto }]}>
+                {historialDiarias[diaSeleccionado].hechas}/{historialDiarias[diaSeleccionado].total} completadas · {historialDiarias[diaSeleccionado].total === 0 ? 0 : Math.round(historialDiarias[diaSeleccionado].hechas / historialDiarias[diaSeleccionado].total * 100)}%
+              </Text>
+            </View>
+          ) : null}
+
           <Text style={[styles.secTitulo, { color: paleta.textoSuave }]}>📋 Tareas</Text>
           {tareasDia.length === 0 ? (
             <View style={[styles.tarjeta, { backgroundColor: paleta.superficie, borderColor: paleta.borde }]}>
@@ -222,4 +239,15 @@ const styles = StyleSheet.create({
   resumenCard: { flex: 1, borderRadius: 12, padding: 12, borderWidth: 1, alignItems: 'center' },
   resumenNum: { fontSize: 22, fontWeight: 'bold', marginBottom: 4 },
   resumenLabel: { fontSize: 11, textAlign: 'center', lineHeight: 15 },
+  historialCard: { borderRadius: 12, padding: 14, borderWidth: 1, marginBottom: 12 },
+  historialTexto: { fontSize: 14, fontWeight: '500' },
+  modalOverlay: { flex: 1, backgroundColor: '#00000055', justifyContent: 'flex-end' },
+  modalWrap: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40 },
+  modalFecha: { fontSize: 12, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 16 },
+  modalCard: { borderRadius: 12, padding: 14, borderWidth: 1, marginBottom: 12 },
+  modalLabel: { fontSize: 13, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
+  modalNum: { fontSize: 22, fontWeight: 'bold' },
+  modalVacio: { fontSize: 14, marginBottom: 8 },
+  modalTarea: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8, borderBottomWidth: 1 },
+  modalCerrar: { borderRadius: 12, padding: 14, alignItems: 'center', marginTop: 20 },
 });
